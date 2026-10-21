@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UIElements;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 
 public class MovePlayer : MonoBehaviour
 {
@@ -40,17 +41,36 @@ public class MovePlayer : MonoBehaviour
         }
 
         if (gameManager.isActive())
-        {
+        {/*
             if (transform.position.x >= -maxX && transform.position.x <= maxX)
             {
                 transform.Translate(Vector3.right * Time.deltaTime * moveSpeed * moveRight);
+                float safeX = Mathf.Clamp(transform.position.x, -maxX, maxX);
+                transform.position = new Vector3(safeX, transform.position.y, transform.position.z);
             }
             else
             {
                 moveRight *= -1f;
                 transform.position = new Vector3(transform.position.x + (0.1f * moveRight), transform.position.y, transform.position.z);
 
+            }*/
+
+            // 1. Always apply movement step first
+            transform.Translate(Vector3.right * moveSpeed * Time.deltaTime * moveRight);
+
+            // 2. Read the current X position and check if boundaries were breached
+            if (transform.position.x >= maxX)
+            {
+                moveRight = -1f; // Force heading left
             }
+            else if (transform.position.x <= -maxX)
+            {
+                moveRight = 1f;  // Force heading right
+            }
+
+            // 3. Cleanly clamp the player so they never render outside the walls
+            float safeX = Mathf.Clamp(transform.position.x, -maxX, maxX);
+            transform.position = new Vector3(safeX, transform.position.y, transform.position.z);
         }
         
     }
